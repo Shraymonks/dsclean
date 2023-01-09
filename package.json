@@ -1,0 +1,31 @@
+{
+  "name": "dsclean",
+  "version": "0.1.0",
+  "description": "Clean up unregistered download tasks in Download Station",
+  "type": "module",
+  "bin": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "pnpm build && node --require dotenv/config dist/index.js"
+  },
+  "keywords": [
+    "download",
+    "station",
+    "synology"
+  ],
+  "author": "Raymond Ha <raymond@shraymonks.com> (https://raymondha.com)",
+  "repository": "github:Shraymonks/dsclean",
+  "homepage": "https://github.com/Shraymonks/dsclean#readme",
+  "bugs": "https://github.com/Shraymonks/dsclean/issues",
+  "license": "ISC",
+  "devDependencies": {
+    "@tsconfig/node18-strictest-esm": "^1.0.1",
+    "@types/node": "^18.11.9",
+    "dotenv": "^16.0.3",
+    "typescript": "^4.9.3",
+    "undici": "^5.12.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
