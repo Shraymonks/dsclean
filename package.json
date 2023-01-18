@@ -19,6 +19,7 @@
   "bugs": "https://github.com/Shraymonks/dsclean/issues",
   "license": "ISC",
   "devDependencies": {
+    "@changesets/cli": "^2.26.0",
     "@tsconfig/node18-strictest-esm": "^1.0.1",
     "@types/node": "^18.11.9",
     "dotenv": "^16.0.3",
