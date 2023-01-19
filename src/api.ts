@@ -91,7 +91,6 @@ export async function logout(): Promise<Response | undefined> {
   if (!loginPromise) {
     return;
   }
-  loginPromise = null;
   const response = await api<Response>({
     api: ApiType.Auth,
     method: 'logout',
@@ -105,5 +104,6 @@ export async function logout(): Promise<Response | undefined> {
       )}`
     );
   }
+  loginPromise = null;
   return response;
 }
