@@ -1,4 +1,6 @@
+.changeset
 .env
+CHANGELOG.md
 pnpm-lock.yaml
 src
 tsconfig.json
