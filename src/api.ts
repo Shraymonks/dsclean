@@ -1,3 +1,4 @@
+import ora from 'ora';
 import { ApiType } from './constants.js';
 import { getErrorMessage } from './errors.js';
 
@@ -6,6 +7,8 @@ const BASE = `${HOST}/webapi/entry.cgi`;
 
 let loginPromise: ReturnType<typeof login> | null = null;
 let sid = '';
+
+export const spinner = ora();
 
 export async function apiFetch<T = Response>(
   options: Record<string, string>
@@ -57,6 +60,7 @@ async function login(): Promise<void> {
   if (!PASSWORD) {
     throw new Error('Must set PASSWORD environment variable.');
   }
+  spinner.start('Authenticating');
   const response = await apiFetch<LoginResponse>({
     account: USERNAME,
     api: ApiType.Auth,
@@ -74,17 +78,27 @@ async function login(): Promise<void> {
     );
   }
   sid = response.data.sid;
+  spinner.stop();
 }
 
-export async function api<T>(options: Record<string, string>): Promise<T> {
+export async function api<T>(
+  options: Record<string, string>,
+  loadingMessage?: string
+): Promise<T> {
   if (!loginPromise) {
     loginPromise = login();
   }
   await loginPromise;
-  return apiFetch({
+  const apiPromise = apiFetch<T>({
     ...options,
     _sid: sid,
   });
+  if (loadingMessage) {
+    spinner.start(loadingMessage);
+    await apiPromise;
+    spinner.stop();
+  }
+  return apiPromise;
 }
 
 export async function logout(): Promise<Response | undefined> {

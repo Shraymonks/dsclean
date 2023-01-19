@@ -18,6 +18,9 @@
   "homepage": "https://github.com/Shraymonks/dsclean#readme",
   "bugs": "https://github.com/Shraymonks/dsclean/issues",
   "license": "ISC",
+  "dependencies": {
+    "ora": "^6.1.2"
+  },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
     "@tsconfig/node18-strictest-esm": "^1.0.1",

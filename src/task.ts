@@ -40,12 +40,15 @@ interface TaskListSuccess {
 type TaskListResponse = Response<TaskListSuccess>;
 
 async function getTasks(): Promise<Task[]> {
-  const response = await api<TaskListResponse>({
-    additional: 'tracker',
-    api: ApiType.Task,
-    method: 'list',
-    version: '2',
-  });
+  const response = await api<TaskListResponse>(
+    {
+      additional: 'tracker',
+      api: ApiType.Task,
+      method: 'list',
+      version: '2',
+    },
+    'Fetching downloads'
+  );
   if (response.success === false) {
     throw new Error(
       `Error getting downloads: ${getErrorMessage(
@@ -79,13 +82,16 @@ interface DeleteTaskSuccess {
 type DeleteTaskResponse = Response<DeleteTaskSuccess>;
 
 async function deleteTasks(taskIds: string[]): Promise<FailedTask[]> {
-  const response = await api<DeleteTaskResponse>({
-    additional: 'tracker',
-    api: ApiType.Task,
-    id: JSON.stringify(taskIds),
-    method: 'delete',
-    version: '2',
-  });
+  const response = await api<DeleteTaskResponse>(
+    {
+      additional: 'tracker',
+      api: ApiType.Task,
+      id: JSON.stringify(taskIds),
+      method: 'delete',
+      version: '2',
+    },
+    'Deleting downloads'
+  );
   if (response.success === false) {
     throw new Error(
       `Error deleting downloads: ${getErrorMessage(
