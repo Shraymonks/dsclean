@@ -63,8 +63,10 @@ async function getTasks(): Promise<Task[]> {
 async function getUnregisteredTasks(): Promise<Task[]> {
   const tasks = await getTasks();
   return tasks.filter((task) =>
-    task.additional?.tracker?.every(
-      (tracker) => tracker.status === TrackerStatus.Unregistered
+    task.additional?.tracker?.every((tracker) =>
+      // Some trackers include a reason for delisting a torrent so just check
+      // if the status starts with `TrackerStatus.Unregistered`.
+      tracker.status.startsWith(TrackerStatus.Unregistered)
     )
   );
 }
