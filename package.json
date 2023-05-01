@@ -8,7 +8,7 @@
     "build": "tsc",
     "prepare": "husky install",
     "release": "pnpm build && changeset publish",
-    "start": "pnpm build && node --require dotenv/config dist/index.js"
+    "start": "pnpm build && node dist/index.js"
   },
   "keywords": [
     "download",
@@ -29,7 +29,6 @@
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
-    "dotenv": "^16.0.3",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "husky": "^8.0.0",
