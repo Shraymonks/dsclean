@@ -10,21 +10,46 @@ let sid = '';
 
 export const spinner = ora();
 
-export async function apiFetch<T = Response>(
-  options: Record<string, string>
-): Promise<T> {
+interface ApiOptions {
+  [key: string]: string;
+  api: ApiType;
+  method: string;
+  version: string;
+}
+
+interface ErrorParams {
+  code: number;
+  message: string;
+}
+
+export async function apiFetch<Data>(
+  options: ApiOptions,
+  loadingMessage: string,
+  formatError: (error: ErrorParams) => string
+): Promise<Data> {
+  spinner.start(loadingMessage);
   const url = new URL(BASE);
   url.search = new URLSearchParams(options).toString();
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(
-      `Error with ${options['method']} request to ${HOST}: ${response.status} ${response.statusText}`
+      `Error with ${options.method} request to ${HOST}: ${response.status} ${response.statusText}`
     );
   }
-  return (await response.json()) as T;
+  const json = (await response.json()) as ApiResponse<Data>;
+  if (!json.success) {
+    throw new Error(
+      formatError({
+        code: json.error.code,
+        message: getErrorMessage(options.api, json.error.code),
+      })
+    );
+  }
+  spinner.stop();
+  return json.data;
 }
 
-interface BaseError {
+interface ApiError {
   error: {
     code: number;
     errors?: unknown;
@@ -32,27 +57,21 @@ interface BaseError {
   success: false;
 }
 
-interface BaseSuccess {
-  data: unknown;
+interface ApiSuccess<Data> {
+  data: Data;
   success: true;
 }
 
-export type Response<Success = BaseSuccess> =
-  | (BaseSuccess & Success)
-  | BaseError;
+type ApiResponse<Data> = ApiSuccess<Data> | ApiError;
 
-interface LoginSuccess {
-  data: {
-    account: string;
-    device_id: string;
-    ik_message: string;
-    is_portal_port: boolean;
-    sid: string;
-    synotoken: string;
-  };
+interface LoginData {
+  account: string;
+  device_id: string;
+  ik_message: string;
+  is_portal_port: boolean;
+  sid: string;
+  synotoken: string;
 }
-type LoginResponse = Response<LoginSuccess>;
-
 async function login(): Promise<void> {
   if (!USERNAME) {
     throw new Error('Must set USERNAME environment variable.');
@@ -61,63 +80,54 @@ async function login(): Promise<void> {
     throw new Error('Must set PASSWORD environment variable.');
   }
   spinner.start('Authenticating');
-  const response = await apiFetch<LoginResponse>({
-    account: USERNAME,
-    api: ApiType.Auth,
-    format: 'sid',
-    method: 'login',
-    passwd: PASSWORD,
-    version: '7',
-  });
-  if (response.success === false) {
-    throw new Error(
-      `Error logging in ${USERNAME}@${HOST}: ${getErrorMessage(
-        ApiType.Auth,
-        response.error.code
-      )}`
-    );
-  }
-  sid = response.data.sid;
+  const data = await apiFetch<LoginData>(
+    {
+      account: USERNAME,
+      api: ApiType.Auth,
+      format: 'sid',
+      method: 'login',
+      passwd: PASSWORD,
+      version: '7',
+    },
+    'Authenticating',
+    ({ message }) => `Error logging in ${USERNAME}@${HOST}: ${message}`
+  );
+  sid = data.sid;
   spinner.stop();
 }
 
-export async function api<T>(
-  options: Record<string, string>,
-  loadingMessage?: string
-): Promise<T> {
+export async function api<Data = undefined>(
+  options: ApiOptions,
+  loadingMessage: string,
+  formatError: (error: ErrorParams) => string
+): Promise<Data> {
   if (!loginPromise) {
     loginPromise = login();
   }
   await loginPromise;
-  const apiPromise = apiFetch<T>({
-    ...options,
-    _sid: sid,
-  });
-  if (loadingMessage) {
-    spinner.start(loadingMessage);
-    await apiPromise;
-    spinner.stop();
-  }
-  return apiPromise;
+  const data = await apiFetch<Data>(
+    {
+      ...options,
+      _sid: sid,
+    },
+    loadingMessage,
+    formatError
+  );
+  return data;
 }
 
-export async function logout(): Promise<Response | undefined> {
+export async function logout(): Promise<void> {
   if (!loginPromise) {
     return;
   }
-  const response = await api<Response>({
-    api: ApiType.Auth,
-    method: 'logout',
-    version: '7',
-  });
-  if (response.success === false) {
-    throw new Error(
-      `Error logging out ${USERNAME}@${HOST}: ${getErrorMessage(
-        ApiType.Auth,
-        response.error.code
-      )}`
-    );
-  }
+  await api(
+    {
+      api: ApiType.Auth,
+      method: 'logout',
+      version: '7',
+    },
+    'Logging out',
+    ({ message }) => `Error logging out ${USERNAME}@${HOST}: ${message}`
+  );
   loginPromise = null;
-  return response;
 }

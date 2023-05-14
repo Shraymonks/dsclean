@@ -8,7 +8,6 @@ import {
 } from './constants.js';
 import { getErrorMessage } from './errors.js';
 import { downloads } from './strings.js';
-import type { Response } from './api.js';
 
 interface Tracker {
   peers: number;
@@ -30,34 +29,24 @@ interface Task {
   username: string;
 }
 
-interface TaskListSuccess {
-  data: {
-    offset: number;
-    task: Task[];
-    total: number;
-  };
+interface TaskListData {
+  offset: number;
+  task: Task[];
+  total: number;
 }
-type TaskListResponse = Response<TaskListSuccess>;
 
 async function getTasks(): Promise<Task[]> {
-  const response = await api<TaskListResponse>(
+  const { task } = await api<TaskListData>(
     {
       additional: 'tracker',
       api: ApiType.Task,
       method: 'list',
       version: '2',
     },
-    'Fetching downloads'
+    'Fetching downloads',
+    ({ message }) => `Error getting downloads: ${message}`
   );
-  if (response.success === false) {
-    throw new Error(
-      `Error getting downloads: ${getErrorMessage(
-        ApiType.Task,
-        response.error.code
-      )}`
-    );
-  }
-  return response.data.task;
+  return task;
 }
 
 async function getUnregisteredTasks(): Promise<Task[]> {
@@ -76,15 +65,12 @@ interface FailedTask {
   id: string;
 }
 
-interface DeleteTaskSuccess {
-  data: {
-    failed_task: FailedTask[];
-  };
+interface DeleteTaskData {
+  failed_task: FailedTask[];
 }
-type DeleteTaskResponse = Response<DeleteTaskSuccess>;
 
 async function deleteTasks(taskIds: string[]): Promise<FailedTask[]> {
-  const response = await api<DeleteTaskResponse>(
+  const { failed_task } = await api<DeleteTaskData>(
     {
       additional: 'tracker',
       api: ApiType.Task,
@@ -92,17 +78,10 @@ async function deleteTasks(taskIds: string[]): Promise<FailedTask[]> {
       method: 'delete',
       version: '2',
     },
-    'Deleting downloads'
+    'Deleting downloads',
+    ({ message }) => `Error deleting downloads: ${message}`
   );
-  if (response.success === false) {
-    throw new Error(
-      `Error deleting downloads: ${getErrorMessage(
-        ApiType.Task,
-        response.error.code
-      )}`
-    );
-  }
-  return response.data.failed_task;
+  return failed_task;
 }
 
 export async function listUnregisteredTasks() {
