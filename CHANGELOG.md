@@ -1,5 +1,11 @@
 # dsclean
 
+## 0.2.2
+
+### Patch Changes
+
+- 8ade3bf: Bump word-wrap from 1.2.3 to 1.2.4
+
 ## 0.2.1
 
 ### Patch Changes
