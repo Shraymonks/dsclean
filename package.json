@@ -1,6 +1,6 @@
 {
   "name": "dsclean",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Clean up unregistered download tasks in Download Station",
   "type": "module",
   "bin": "./dist/index.js",

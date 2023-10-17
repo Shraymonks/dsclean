@@ -1,5 +1,11 @@
 # dsclean
 
+## 0.2.3
+
+### Patch Changes
+
+- 95968ad: Use undici-types instead of undici
+
 ## 0.2.2
 
 ### Patch Changes
